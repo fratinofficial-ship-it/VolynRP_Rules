@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VolynRP | Правила сервера</title>
+    <link rel="icon" type="image/png" href="Group%20200.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6; --accent: #60a5fa; --neon-blue: #00d4ff;
+            --bg-dark: #020617; --card-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08); --text-main: #f8fafc;
+            --text-muted: #94a3b8; --success: #22c55e; --error: #ef4444; --admin-color: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; scrollbar-width: none; }
+        *::-webkit-scrollbar { display: none; }
+        body { min-height: 100vh; background: radial-gradient(circle at top left, #0f172a, #020617); color: var(--text-main); overflow-x: hidden; display: flex; flex-direction: column; }
+        
+        .topbar { position: fixed; top: 0; width: 100%; height: 80px; background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; justify-content: space-between; align-items: center; padding: 0 5%; border-bottom: 1px solid var(--glass-border); z-index: 1000; }
+        .brand-link { display: inline-flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
+        .brand-icon { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 0 18px rgba(96, 165, 250, 0.45); }
+        .title-text { font-size: 20px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; background: linear-gradient(to right, #fff, var(--neon-blue)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+        .nav-buttons { display: flex; gap: 15px; align-items: center; }
+        .btn-nav { color: white; padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 12px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; transition: 0.3s; }
+        .btn-add-idea { background: linear-gradient(135deg, #22c55e, #10b981); }
+        .btn-admin-nav { background: linear-gradient(135deg, #f59e0b, #d97706); display: none; }
+        .btn-login { background: rgba(255, 255, 255, 0.05); position: relative; }
+
+        .user-menu { position: absolute; top: calc(100% + 10px); right: 0; background: #0f172a; border: 1px solid var(--glass-border); border-radius: 12px; padding: 8px; width: 160px; display: none; flex-direction: column; gap: 5px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1100; }
+        .user-menu.active { display: flex; }
+        .menu-item { padding: 10px; border-radius: 8px; color: var(--text-main); font-size: 11px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 10px; transition: 0.2s; cursor: pointer; }
+        .menu-item:hover { background: rgba(255,255,255,0.05); color: var(--error); }
+
+        .container { padding-top: 130px; width: 95%; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 60px; flex: 1; }
+        .logo { margin-bottom: 50px; max-width: 250px; filter: drop-shadow(0 0 25px var(--primary)); animation: logoFloat 2.8s ease-in-out infinite; }
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 20px var(--primary)); }
+            50% { transform: translateY(-8px) scale(1.02); filter: drop-shadow(0 0 34px var(--neon-blue)); }
+        }
+        .buttons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%; }
+        
+        .btn-rule { 
+            background: var(--card-bg); border: 1px solid var(--glass-border); padding: 35px 20px; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; opacity: 0; transform: translateY(20px); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn-rule.show { opacity: 1; transform: translateY(0); }
+        .btn-rule:hover { transform: translateY(-10px) !important; border-color: var(--neon-blue); box-shadow: 0 15px 35px rgba(0, 212, 255, 0.25); background: rgba(255, 255, 255, 0.06); }
+        
+        .btn-rule i { font-size: 65px; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; transition: 0.3s; }
+        .btn-rule:hover i { transform: scale(1.15); }
+        
+        .btn-rule span { font-size: 18px; font-weight: 700; text-transform: uppercase; color: #f8fafc; text-align: center; letter-spacing: 0.5px; }
+
+        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(15px); opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+        .modal.open { opacity: 1; pointer-events: auto; }
+        .modal-content { width: 860px; max-width: 94vw; max-height: 84vh; background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.98)); border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 28px; padding: 40px 32px 32px; position: relative; overflow-y: auto; transform: scale(0.94); transition: transform 0.4s; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.55); }
+        .modal.open .modal-content { transform: scale(1); }
+        .close-btn { position: absolute; top: 18px; right: 18px; font-size: 18px; cursor: pointer; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255, 255, 255, 0.06); z-index: 10; border: 1px solid rgba(255,255,255,0.08); transition: 0.2s; }
+        .close-btn:hover { background: rgba(255,255,255,0.12); transform: rotate(90deg); }
+
+        .cat-header { display: flex; flex-direction: column; align-items: center; gap: 10px; font-weight: 900; margin-bottom: 28px; text-transform: uppercase; text-align: center; }
+        .cat-header i { font-size: 74px; margin-bottom: 6px; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .cat-header span { font-size: 24px; letter-spacing: 0.5px; }
+        .cat-header p { color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: none; line-height: 1.5; }
+
+        #notification-container { position: fixed; bottom: 30px; right: 30px; display: flex; flex-direction: column-reverse; gap: 15px; z-index: 9999; }
+        .notif { background: rgba(15, 23, 42, 0.95); border: 1px solid var(--glass-border); padding: 20px; border-radius: 16px; width: 320px; border-left: 5px solid var(--primary); animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .notif-title { font-weight: 800; font-size: 14px; margin-bottom: 5px; text-transform: uppercase; }
+        .notif-msg { font-size: 13px; color: var(--text-muted); }
+
+        .admin-item { background: rgba(255, 255, 255, 0.03); padding: 20px; border-radius: 18px; border: 1px solid var(--glass-border); border-left: 5px solid var(--admin-color); margin-bottom: 20px; }
+        .adm-actions { display: flex; gap: 12px; margin-top: 15px; }
+        .btn-adm-act { flex: 1; padding: 10px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; color: white; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .st-approved { border-left-color: var(--success); }
+        .st-rejected { border-left-color: var(--error); }
+        
+        .rule-item { background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)); padding: 18px 20px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.12); margin-bottom: 12px; font-family: 'Montserrat', sans-serif; font-weight: 700; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+        .rule-title { font-size: 15px; font-weight: 800; color: #ffffff; line-height: 1.45; margin-bottom: 6px; }
+        .rule-desc { font-size: 13px; color: var(--text-muted); line-height: 1.55; font-weight: 600; }
+        .punish-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 170px; }
+        .punish-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; }
+        .punish-tag { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; text-transform: uppercase; border: 1px solid; box-shadow: 0 8px 18px rgba(0,0,0,0.2); }
+        .punish-red { color: #fecaca; background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(248, 113, 113, 0.12)); border-color: rgba(248, 113, 113, 0.35); }
+        .punish-orange { color: #fde68a; background: linear-gradient(135deg, rgba(245, 158, 11, 0.24), rgba(251, 191, 36, 0.12)); border-color: rgba(251, 191, 36, 0.33); }
+        .rules-filter { width: 100%; margin-bottom: 28px; padding: 20px; background: rgba(255,255,255,0.035); border: 1px solid var(--glass-border); border-radius: 20px; backdrop-filter: blur(10px); }
+        .rules-search-wrap { display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 16px; border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; background: rgba(2,6,23,0.55); }
+        .rules-search-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(96,165,250,0.14); }
+        .rules-search-wrap svg { width: 20px; height: 20px; flex: 0 0 auto; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .rules-search { width: 100%; min-height: 48px; border: none; outline: none; background: transparent; color: var(--text-main); font: inherit; font-size: 14px; }
+        .rules-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(96,165,250,0.14); }
+        .rules-search::placeholder { color: var(--text-muted); }
+        .rules-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+        .rules-tab { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 10px 15px; color: var(--text-main); background: rgba(255,255,255,0.06); cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; text-transform: uppercase; transition: 0.2s; }
+        .rules-tab svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .rules-tab:hover, .rules-tab.active { background: var(--primary); border-color: var(--accent); }
+        .filtered-rules { display: none; width: 100%; margin-bottom: 28px; }
+        .filtered-rules.active { display: block; }
+        .filtered-rules-title { color: var(--text-muted); font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; }
+        .filtered-rule .rule-source { color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        .empty-rules { color: var(--text-muted); text-align: center; padding: 24px; border: 1px dashed var(--glass-border); border-radius: 16px; }
+        .no-results { padding: 28px 20px; text-align: center; color: var(--accent); background: rgba(0, 87, 183, 0.12); border: 1px solid rgba(255, 215, 0, 0.28); border-radius: 16px; font-size: 15px; font-weight: 800; }
+        @media (max-width: 620px) { .rule-item { flex-direction: column; } .punish-wrap { align-items: flex-start; min-width: 0; } }
+        .zone-map-frame { width: 100%; margin-bottom: 20px; padding: 8px; border: 1px solid rgba(0, 212, 255, 0.45); border-radius: 20px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.12), rgba(255, 255, 255, 0.03)); box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.08), 0 12px 30px rgba(0, 0, 0, 0.3), 0 0 28px rgba(0, 212, 255, 0.12); }
+        .zone-map-frame img { width: 100%; max-height: 320px; display: block; object-fit: contain; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(2, 6, 23, 0.55); }
+        .footer-copyright { padding: 25px; text-align: center; font-size: 13px; color: var(--text-muted); border-top: 1px solid var(--glass-border); }
+        #userPic { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+    </style>
+</head>
+<body onclick="closeAllMenus(event)">
+
+<div id="notification-container"></div>
+
+<div class="topbar">
+    <a class="brand-link" href="#" onclick="location.reload(); return false;" aria-label="VolynRP • Правила">
+        <img class="brand-icon" src="Group%20200.png" alt="Логотип VolynRP">
+        <div class="title-text" id="siteTitle">VolynRP • ПРАВИЛА</div>
+    </a>
+    <div class="nav-buttons">
+        <div class="btn-nav btn-admin-nav" id="adminBtn" onclick="openAdminPanel()"><i class="fa-solid fa-user-shield"></i><span>Адміністратор</span></div>
+    </div>
+</div>
+
+<div class="container">
+    <img src="image_247889.png" class="logo">
+    <section class="rules-filter" id="rulesFilter" aria-label="Пошук по правилах">
+        <label class="rules-search-wrap" for="rulesSearch">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+            <input class="rules-search" id="rulesSearch" type="search" placeholder="Введіть правило" autocomplete="off">
+        </label>
+        <div class="rules-tabs" id="rulesTabs" role="tablist" aria-label="Відділи правил">
+            <button class="rules-tab active" type="button" data-filter="all"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"></path><path d="M4 6h.01M4 12h.01M4 18h.01"></path></svg><span>Усі</span></button>
+            <button class="rules-tab" type="button" data-filter="ban"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m6 6 12 12"></path></svg><span>Бани</span></button>
+            <button class="rules-tab" type="button" data-filter="fine"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 12h10M12 9v6"></path></svg><span>Штрафи</span></button>
+            <button class="rules-tab" type="button" data-filter="serious"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 17H3L12 3Z"></path><path d="M12 9v5M12 17h.01"></path></svg><span>Тяжкі</span></button>
+        </div>
+    </section>
+    <section class="filtered-rules" id="filteredRules" aria-live="polite">
+        <div class="filtered-rules-title" id="filteredRulesTitle">Знайдені правила</div>
+        <div id="filteredRulesList"></div>
+    </section>
+    <div class="buttons-grid" id="btnGrid"></div>
+</div>
+
+<footer class="footer-copyright">&copy; <span id="year"></span> VolynRP. <span id="copyrightText">Усі права захищено.</span></footer>
+
+<div class="modal" id="modal" onclick="if(event.target === this) closeModal()">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">✕</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    window.closeAllMenus = () => {};
+</script>
+
+<script>
+    const categories = [
+        {
+            name: "1. ПДР",
+            icon: "fa-solid fa-car-side",
+            subtitle: "Зустрічна смуга, фари, паркування",
+            rules: [
+                { title: "1.0 Їзда зустрічною смугою", desc: "", punish: "Штраф 5000€" },
+                { title: "1.1 Проїзд на червоне світло", desc: "", punish: "Автоматичний штраф 100€" },
+                { title: "1.2 Вимкнені фари в темну пору доби", desc: "", punish: "Штраф 2000€" },
+                { title: "1.3 Неправильне паркування (не на парковці)", desc: "", punish: "Штраф 3000€" },
+                { title: "1.4 Невикористання покажчиків повороту", desc: "", punish: "Штраф 2500€" },
+                { title: "1.5 Необережна їзда", desc: "", punish: "Штраф 4500€" },
+                { title: "1.6 Втеча з місця ДТП", desc: "", punish: "Попередження або штраф 3500€" },
+                { title: "1.7 Обгін автомобіля", desc: "", punish: "Штраф 1500€" },
+                { title: "1.8 Використання проблискових маячків без потреби", desc: "", punish: "Штраф 1000€" },
+                { title: "1.9 Сільськогосподарський транспорт у місті (трактор)", desc: "", punish: "Штраф 7000€" },
+                { title: "1.10 Переслідування поліцією", desc: "", punish: "КПЗ або штраф 8000€" },
+                { title: "1.11 Перевищення швидкості (>150 км/год)", desc: "", punish: "Штраф 3500€" },
+                { title: "1.12 Підрізання автомобіля", desc: "", punish: "Штраф 8000€" }
+            ]
+        },
+        {
+            name: "2. Зброя",
+            icon: "fa-solid fa-gun",
+            subtitle: "Носіння, ліцензія, застосування",
+            rules: [
+                { title: "2.0 Відкрите носіння зброї", desc: "", punish: "Штраф 3000€" },
+                { title: "2.1 Використання зброї без ліцензії", desc: "", punish: "Штраф 5000€ і конфіскація" },
+                { title: "2.2 Використання зброї без причини", desc: "", punish: "Штраф 8000€ або бан на 1 день" },
+                { title: "2.3 Передавання зброї іншим особам", desc: "", punish: "Штраф 2500€" },
+                { title: "2.4 Використання зброї в місті без підстав", desc: "", punish: "Штраф 8000€" }
+            ]
+        },
+        {
+            name: "3. Голосовий чат",
+            icon: "fa-solid fa-music",
+            subtitle: "Гучна музика, сторонні звуки",
+            rules: [
+                { title: "3.0 Гучна музика, сторонні звуки", desc: "", punish: "Штраф 4000€" },
+                { title: "3.1 Російська музика", desc: "", punish: "Бан на 3 дні" },
+                { title: "3.2 Перебивання", desc: "", punish: "Штраф 3500€" },
+                { title: "3.3 Сексуальні звуки", desc: "", punish: "Попередження або штраф 7000€" },
+                { title: "3.4 Російська пропаганда", desc: "", punish: "Бан назавжди" }
+            ]
+        },
+        {
+            name: "4. Напад",
+            icon: "fa-solid fa-skull-crossbones",
+            subtitle: "ВДМ, РДМ, убивства",
+            rules: [
+                { title: "4.0 VDM (Vehicle Death Match)", desc: "", punish: "Штраф 6000€ або бан на 2 дні" },
+                { title: "4.1 RDM (Random Death Match)", desc: "", punish: "Штраф 5000€ або бан на 2 дні" },
+                { title: "4.2 RK (Revenge Kill)", desc: "", punish: "Штраф 4000€ або бан на 1 день" },
+                { title: "4.3 DM (напад) від 3 ударів", desc: "", punish: "Штраф 3000€" },
+                { title: "4.4 Убивство", desc: "", punish: "Штраф 8000€ або КПЗ" }
+            ]
+        },
+        {
+            name: "5. NRP-поведінка",
+            icon: "fa-solid fa-bolt",
+            subtitle: "Нереалістичне відігрування",
+            rules: [
+                { title: "5.0 Power Gaming (нереалістичне відігрування)", desc: "", punish: "Попередження або бан на 2 дні" },
+                { title: "5.1 Meta Gaming (знання інформації поза грою)", desc: "", punish: "Бан на 2 дні" },
+                { title: "5.2 Fail RP (невдале RP)", desc: "", punish: "Бан на 1 день" },
+                { title: "5.3 CopBaiting (провокування поліції)", desc: "", punish: "Штраф 4000€ або попередження" },
+                { title: "5.4 Убивство AFK-персонажа", desc: "", punish: "Штраф 8000€" },
+                { title: "5.5 Відсутність Fear RP (відсутність страху)", desc: "", punish: "Попередження або бан на 1 день" },
+                { title: "5.6 Combat Logging (вихід із бою)", desc: "", punish: "Попередження або бан на 3 дні" },
+                { title: "5.7 Перешкоджання офіцеру під час затримання або погоні та його вбивство", desc: "", punish: "Бан на 3 дні" },
+                { title: "5.8 Їзда зі злочинцем на поліцейському автомобілі", desc: "", punish: "Співучасникам і поліцейському — бан на 16 днів" }
+            ]
+        },
+        {
+            name: "6. Пограбування",
+            icon: "fa-solid fa-hand-holding-dollar",
+            subtitle: "Магазини, банки, контейнери",
+            rules: [
+                { title: "6.0 Пограбування заправки", desc: "", punish: "Штраф 3500€" },
+                { title: "6.1 Пограбування магазину", desc: "", punish: "Штраф 5000€" },
+                { title: "6.2 Пограбування ювелірного магазину", desc: "", punish: "Штраф на розсуд судді та конфіскація" },
+                { title: "6.3 Пограбування банку", desc: "", punish: "КПЗ або штраф 8000€ і конфіскація" },
+                { title: "6.4 Пограбування торгового автомата", desc: "", punish: "Штраф 1500€" },
+                { title: "6.5 Пограбування контейнера", desc: "", punish: "Штраф 6000€ і конфіскація" }
+            ]
+        },
+        {
+            name: "7. NRP-поліція",
+            icon: "fa-solid fa-handcuffs",
+            subtitle: "Реалістичне затримання та застосування сили",
+            rules: [
+                { title: "7.0 NRP-каф без причини", desc: "", punish: "Штраф 7000€ або бан на 1 день" },
+                { title: "7.1 XP без дозволу гравця", desc: "", punish: "Попередження або штраф 2000€" },
+                { title: "7.2 Перевірка бази даних на наявність розшуку", desc: "", punish: "Попередження або штраф 3000€" },
+                { title: "7.3 Каф заради помсти/тролінгу/булінгу", desc: "", punish: "Бан на 3 дні" },
+                { title: "7.4 Використання тазера без причини", desc: "", punish: "Штраф 8000€ або бан на 2 дні" },
+                { title: "7.5 Застосування сили без потреби", desc: "", punish: "Штраф на розсуд адміністрації" },
+                { title: "7.6 Відходити від поліції далі ніж на 5 метрів", desc: "", punish: "Попередження" },
+                { title: "7.7 Везення до КПЗ без суду", desc: "", punish: "Бан на 2 дні" }
+            ]
+        },
+        {
+            name: "8. Булінг",
+            icon: "fa-solid fa-comments",
+            subtitle: "Булінг, сексуальний контент",
+            rules: [
+                { title: "8.0 Булінг, сексуальний контент тощо", desc: "Поважайте людей.", punish: "Штраф 6000€" },
+                { title: "8.1 Булінг родичів", desc: "", punish: "Бан на 14 днів" }
+            ]
+        },
+        {
+            name: "9. Суд",
+            icon: "fa-solid fa-gavel",
+            subtitle: "Поведінка в суді та тиск",
+            rules: [
+                { title: "9.0 Перебивання судді/адвоката/прокурора", desc: "", punish: "Штраф 6500€" },
+                { title: "9.1 Ігнорування рішення суду", desc: "", punish: "Бан на 1 день або штраф 5000€" },
+                { title: "9.2 Приховування друзів або знайомих", desc: "", punish: "Бан на 2 дні" },
+                { title: "9.3 Перешкоджання суду", desc: "", punish: "Бан на 2 дні або штраф 5000€" },
+                { title: "9.4 Тиск на суддю/адвоката/прокурора", desc: "", punish: "Штраф 2000€" },
+                { title: "9.5 Неповага до судді", desc: "", punish: "Штраф 3000€" }
+            ]
+        },
+        {
+            name: "10. Реклама",
+            icon: "fa-solid fa-bullhorn",
+            subtitle: "Небажана реклама та провокації",
+            rules: [
+                { title: "10.0 Реклама, спам, провокування", desc: "", punish: "Бан назавжди" }
+            ]
+        },
+        {
+            name: "11. Чити",
+            icon: "fa-solid fa-shield-halved",
+            subtitle: "Ігрові порушення та експлойти",
+            rules: [
+                { title: "11.0 Чити, використання багів тощо", desc: "", punish: "Бан назавжди" }
+            ]
+        },
+        {
+            name: "12. Bunnyhop",
+            icon: "fa-solid fa-person-running",
+            subtitle: "Заборонений стрибок",
+            rules: [
+                { title: "12.0 Bhop (Bunnyhop)", desc: "", punish: "Попередження. Повторний випадок — бан на 3 дні" }
+            ]
+        },
+        {
+            name: "13. Процесуальні дії",
+            icon: "fa-solid fa-video",
+            subtitle: "Документування порушень і затримань",
+            rules: [
+                { title: "13.0 Відсутність відеофіксації порушення та затримання", desc: "", punish: "Штраф 3000€" },
+                { title: "13.1 Непредставлення (звання, ім’я, посада)", desc: "", punish: "Бан на 1 день або штраф 4000€" },
+                { title: "13.2 Неповідомлення прав Міранди", desc: "", punish: "Штраф 4500€" }
+            ]
+        },
+        {
+            name: "14. Уникнення покарання",
+            icon: "fa-solid fa-ban",
+            subtitle: "Обхід штрафів, банів і покарань",
+            rules: [
+                { title: "14.0 Уникнення покарання, штрафу, бану (твінки тощо)", desc: "", punish: "Бан на 4 дні або назавжди" },
+                { title: "14.1 Вихід під час RP", desc: "", punish: "Бан на 1 день" }
+            ]
+        },
+        {
+            name: "15. Проникнення на територію",
+            icon: "fa-solid fa-house-crack",
+            subtitle: "Чужа територія та привласнення",
+            rules: [
+                { title: "15.0 Проникнення на чужу територію", desc: "", punish: "Бан на 1 день або штраф 3000€" },
+                { title: "15.1 Привласнення чужої території", desc: "", punish: "Бан на 3 дні" }
+            ]
+        },
+        {
+            name: "16. Державні служби",
+            icon: "fa-solid fa-ambulance",
+            subtitle: "Перешкоджання медикам і держслужбовцям",
+            rules: [
+                { title: "16.0 Не пропустив швидку допомогу, яка їде на виклик", desc: "", punish: "Штраф 8000€" },
+                { title: "16.1 Убив державного працівника", desc: "", punish: "КПЗ" },
+                { title: "16.2 Зламав автомобіль державного працівника", desc: "", punish: "Компенсація на розсуд державного працівника" },
+                { title: "16.3 Приховування злочину", desc: "", punish: "Бан на 4 дні" }
+            ]
+        },
+        {
+            name: "17. Зелені зони",
+            icon: "fa-solid fa-tree",
+            subtitle: "Заборона бойових дій, стрілянини та насильства",
+            rules: [
+                { title: "17.0 Заборонені бійки в зелених зонах", desc: "", punish: "Штраф 5000€ або бан на 1 день" },
+                { title: "17.1 Заборонена стрілянина", desc: "", punish: "Бан на 3 дні" },
+                { title: "17.2 Маска, броня, жилет", desc: "", punish: "Штраф 4000€" }
+            ]
+        }
+    ];
+
+    /* Старі словники мов більше не використовуються. Сайт працює лише українською.
+    const currentLanguage = 'uk';
+    const uiTranslations = {
+        uk: { title: 'DniproRP | Правила сервера', site: 'DniproRP • ПРАВИЛА', search: 'Введіть правило', all: 'Все', bans: 'Бани', fines: 'Штрафи', serious: 'Тяжкі', found: 'Знайдені категорії', punishment: 'Покарання', protected: 'Усі права захищено.', idea: 'ВАША ІДЕЯ', ideaPlaceholder: 'Опишіть ідею...', send: 'НАДІСЛАТИ', close: 'ЗАКРИТИ', admin: 'ПАНЕЛЬ АДМІНІСТРАТОРА', noIdeas: 'Ідей немає.', warning: 'УВАГА!', login: 'Спочатку увійдіть через Google.', empty: 'Поле не може бути порожнім.', yes: 'ТАК', no: 'НІ', sent: 'НАДІСЛАНО!', sentText: 'Адміністратор перевірить вашу ідею. Дякуємо!', nextAttempt: 'Наступна спроба через' }
+    };
+    const textTranslations = {
+        ru: [['Зустрічна смуга', 'Встречная полоса'], ['паркування', 'парковка'], ['Зброя', 'Оружие'], ['Носіння', 'Ношение'], ['застосування', 'применение'], ['Голосовий чат', 'Голосовой чат'], ['Гучна музика', 'Громкая музыка'], ['сторонні звуки', 'посторонние звуки'], ['Напад', 'Нападение'], ['убивства', 'убийства'], ['Пограбування', 'Ограбление'], ['Булінг', 'Буллинг'], ['Процесуальні дії', 'Процессуальные действия'], ['Уникнення покарання', 'Избегание наказания'], ['Проникнення на територію', 'Проникновение на территорию'], ['Державні служби', 'Государственные службы'], ['Зелені зони', 'Зеленые зоны'], ['Заборона', 'Запрет'], ['Перешкоджання', 'Воспрепятствование'], ['Убив', 'Убил'], ['Убивство', 'Убийство'], ['Використання', 'Использование'], ['без причини', 'без причины'], ['або', 'или'], ['і', 'и'], ['Конфіскація', 'Конфискация']],
+        be: [['Зустрічна смуга', 'Сустрэчная паласа'], ['паркування', 'паркоўка'], ['Зброя', 'Зброя'], ['Носіння', 'Нашэнне'], ['застосування', 'выкарыстанне'], ['Голосовий чат', 'Галасавы чат'], ['Гучна музика', 'Гучная музыка'], ['сторонні звуки', 'староннія гукі'], ['Напад', 'Напад'], ['убивства', 'забойствы'], ['Пограбування', 'Рабаванне'], ['Булінг', 'Булінг'], ['Процесуальні дії', 'Працэсуальныя дзеянні'], ['Уникнення покарання', 'Пазбяганне пакарання'], ['Проникнення на територію', 'Пранікненне на тэрыторыю'], ['Державні служби', 'Дзяржаўныя службы'], ['Зелені зони', 'Зялёныя зоны'], ['Заборона', 'Забарона'], ['Перешкоджання', 'Перашкаджанне'], ['Убив', 'Забіў'], ['Убивство', 'Забойства'], ['Використання', 'Выкарыстанне'], ['без причини', 'без прычыны'], ['або', 'або'], ['і', 'і'], ['Конфіскація', 'Канфіскацыя']]
+    };
+
+    const wordTranslations = {
+        ru: [['Відкрите', 'Открытое'], ['Проїзд', 'Проезд'], ['червоне', 'красный'], ['Вимкнені', 'Выключенные'], ['темну', 'темное'], ['пору', 'время'], ['доби', 'суток'], ['Неправильне', 'Неправильная'], ['Невикористання', 'Неиспользование'], ['Попередження', 'Предупреждение'], ['Обгін', 'Обгон'], ['автомобіля', 'автомобиля'], ['Використання', 'Использование'], ['місті', 'городе'], ['підстав', 'оснований'], ['Перевищення', 'Превышение'], ['швидкості', 'скорости'], ['Підрізання', 'Подрезание'], ['Передавання', 'Передача'], ['іншим особам', 'другим лицам'], ['Гравця', 'игрока'], ['Перевірка', 'Проверка'], ['бази даних', 'базы данных'], ['розшуку', 'розыска'], ['Застосування', 'Применение'], ['потреби', 'необходимости'], ['Відходити', 'Отходить'], ['далі ніж', 'дальше чем'], ['метрів', 'метров'], ['Везення', 'Доставка'], ['суду', 'суда'], ['родичів', 'родственников'], ['Поведінка', 'Поведение'], ['Ігнорування', 'Игнорирование'], ['рішення', 'решения'], ['Приховування', 'Укрытие'], ['друзів або знайомих', 'друзей или знакомых'], ['Перешкоджання', 'Помеха'], ['Тиск', 'Давление'], ['Неповага', 'Неуважение'], ['Небажана', 'Нежелательная'], ['Ігрові порушення', 'Игровые нарушения'], ['Заборонений', 'Запрещенный'], ['Відсутність', 'Отсутствие'], ['відеофіксації', 'видеофиксации'], ['затримання', 'задержания'], ['Неповідомлення прав', 'Необъявление прав'], ['Обхід', 'Обход'], ['Вихід', 'Выход'], ['Чужа територія', 'Чужая территория'], ['привласнення', 'присвоение'], ['державного працівника', 'государственного работника'], ['Маска', 'Маска'], ['броня', 'броня'], ['жилет', 'жилет'], ['дні', 'дня'], ['назавжди', 'навсегда'], ['Штраф', 'Штраф'], ['бан', 'бан'], ['або', 'или'], ['і', 'и']],
+        be: [['Відкрите', 'Адкрытае'], ['Проїзд', 'Праезд'], ['червоне', 'чырвонае'], ['Вимкнені', 'Выключаныя'], ['темну', 'цёмную'], ['пору', 'пару'], ['доби', 'сутак'], ['Неправильне', 'Няправільная'], ['Невикористання', 'Невыкарыстанне'], ['Попередження', 'Папярэджанне'], ['Обгін', 'Абгон'], ['автомобіля', 'аўтамабіля'], ['Використання', 'Выкарыстанне'], ['місті', 'горадзе'], ['підстав', 'падстаў'], ['Перевищення', 'Перавышэнне'], ['швидкості', 'хуткасці'], ['Підрізання', 'Падразанне'], ['Передавання', 'Перадача'], ['іншим особам', 'іншым асобам'], ['гравця', 'гульца'], ['Перевірка', 'Праверка'], ['бази даних', 'базы даных'], ['розшуку', 'вышуку'], ['Застосування', 'Прымяненне'], ['потреби', 'патрэбы'], ['Відходити', 'Адыходзіць'], ['метрів', 'метраў'], ['Везення', 'Дастаўка'], ['суду', 'суда'], ['родичів', 'сваякоў'], ['Поведінка', 'Паводзіны'], ['Ігнорування', 'Ігнараванне'], ['рішення', 'рашэння'], ['Приховування', 'Утойванне'], ['друзів або знайомих', 'сяброў або знаёмых'], ['Перешкоджання', 'Перашкода'], ['Тиск', 'Ціск'], ['Неповага', 'Непавага'], ['Небажана', 'Непажаданая'], ['Ігрові порушення', 'Гульнявыя парушэнні'], ['Заборонений', 'Забаронены'], ['Відсутність', 'Адсутнасць'], ['відеофіксації', 'відэафіксацыі'], ['затримання', 'затрымання'], ['Неповідомлення прав', 'Непаведамленне правоў'], ['Обхід', 'Абыход'], ['Вихід', 'Выхад'], ['Чужа територія', 'Чужая тэрыторыя'], ['привласнення', 'прысваенне'], ['державного працівника', 'дзяржаўнага работніка'], ['дні', 'дні'], ['назавжди', 'назаўжды'], ['Штраф', 'Штраф'], ['бан', 'бан'], ['або', 'або'], ['і', 'і']]
+    };
+
+    const completeWordTranslations = {
+        ru: [['Їзда', 'Езда'], ['зустрічною', 'встречной'], ['смугою', 'полосой'], ['Автоматичний', 'Автоматический'], ['світло', 'свет'], ['покажчиків повороту', 'указателей поворота'], ['Необережна', 'Неосторожная'], ['Втеча', 'Побег'], ['місця ДТП', 'места ДТП'], ['проблискових маячків', 'проблесковых маячков'], ['без потреби', 'без необходимости'], ['Сільськогосподарський транспорт', 'Сельскохозяйственный транспорт'], ['Переслідування поліцією', 'Погоня от полиции'], ['Відкрите носіння зброї', 'Открытое ношение оружия'], ['ліцензії', 'лицензии'], ['місті', 'городе'], ['без підстав', 'без оснований'], ['Російська', 'Русская'], ['Перебивання', 'Перебивание'], ['Сексуальні звуки', 'Сексуальные звуки'], ['пропаганда', 'пропаганда'], ['на 3 дні', 'на 3 дня'], ['на 2 дні', 'на 2 дня'], ['на 1 день', 'на 1 день'], ['від 3 ударів', 'от 3 ударов'], ['нереалістичне відігрування', 'нереалистичная отыгровка'], ['поза грою', 'вне игры'], ['невдале RP', 'неудачное RP'], ['провокування поліції', 'провокация полиции'], ['AFK-персонажа', 'AFK-персонажа'], ['відсутність страху', 'отсутствие страха'], ['вихід із бою', 'выход из боя'], ['офіцеру під час затримання або погоні', 'офицеру во время задержания или погони'], ['його вбивство', 'его убийство'], ['зі злочинцем', 'с преступником'], ['поліцейському автомобілі', 'полицейском автомобиле'], ['Співучасникам і поліцейському', 'Соучастникам и полицейскому'], ['Пограбування заправки', 'Ограбление заправки'], ['Пограбування магазину', 'Ограбление магазина'], ['ювелірного магазину', 'ювелирного магазина'], ['розсуд судді', 'усмотрение судьи'], ['торгового автомата', 'торгового автомата'], ['контейнера', 'контейнера'], ['Реалістичне затримання та застосування сили', 'Реалистичное задержание и применение силы'], ['без дозволу гравця', 'без разрешения игрока'], ['наявність розшуку', 'наличие розыска'], ['заради помсти', 'ради мести'], ['тролінгу', 'троллинга'], ['тазера', 'тазера'], ['на розсуд адміністрації', 'по усмотрению администрации'], ['далі ніж на 5 метрів', 'дальше 5 метров'], ['Булінг родичів', 'Буллинг родственников'], ['Поважайте людей', 'Уважайте людей'], ['судді', 'судьи'], ['адвоката', 'адвоката'], ['прокурора', 'прокурора'], ['Ігнорування рішення суду', 'Игнорирование решения суда'], ['Приховування друзів або знайомих', 'Укрытие друзей или знакомых'], ['Неповага до судді', 'Неуважение к судье'], ['провокування', 'провокация'], ['використання багів', 'использование багов'], ['Повторний випадок', 'Повторный случай'], ['Документування порушень і затримань', 'Документирование нарушений и задержаний'], ['Непредставлення', 'Непредставление'], ['звання, ім’я, посада', 'звание, имя, должность'], ['прав Міранди', 'прав Миранды'], ['штрафу, бану', 'штрафа, бана'], ['твінки тощо', 'твинки и тому подобное'], ['швидку допомогу', 'скорую помощь'], ['яка їде на виклик', 'которая едет на вызов'], ['Зламав автомобіль', 'Сломал автомобиль'], ['Компенсація', 'Компенсация'], ['Приховування злочину', 'Сокрытие преступления'], ['Заборонені бійки', 'Запрещенные драки'], ['зелених зонах', 'зеленых зонах'], ['стрілянина', 'стрельба'], ['броня', 'броня'], ['жилет', 'жилет']],
+        be: [['Їзда', 'Езда'], ['зустрічною', 'сустрэчнай'], ['смугою', 'паласой'], ['Автоматичний', 'Аўтаматычны'], ['світло', 'святло'], ['покажчиків повороту', 'паказальнікаў павароту'], ['Необережна', 'Неасцярожная'], ['Втеча', 'Уцёкі'], ['місця ДТП', 'месца ДТЗ'], ['проблискових маячків', 'пробліскавых маячкоў'], ['без потреби', 'без патрэбы'], ['Сільськогосподарський транспорт', 'Сельскагаспадарчы транспарт'], ['Переслідування поліцією', 'Пагоня ад паліцыі'], ['Відкрите носіння зброї', 'Адкрытае нашэнне зброі'], ['ліцензії', 'ліцэнзіі'], ['місті', 'горадзе'], ['без підстав', 'без падстаў'], ['Російська', 'Расійская'], ['Перебивання', 'Перабіванне'], ['Сексуальні звуки', 'Сексуальныя гукі'], ['на 3 дні', 'на 3 дні'], ['на 2 дні', 'на 2 дні'], ['на 1 день', 'на 1 дзень'], ['від 3 ударів', 'ад 3 удараў'], ['нереалістичне відігрування', 'нерэалістычная ролевая гульня'], ['поза грою', 'па-за гульнёй'], ['невдале RP', 'няўдалае RP'], ['провокування поліції', 'правакацыя паліцыі'], ['відсутність страху', 'адсутнасць страху'], ['вихід із бою', 'выхад з бою'], ['офіцеру під час затримання або погоні', 'афіцэру падчас затрымання або пагоні'], ['його вбивство', 'яго забойства'], ['зі злочинцем', 'са злачынцам'], ['поліцейському автомобілі', 'паліцэйскім аўтамабілі'], ['Співучасникам і поліцейському', 'Саўдзельнікам і паліцэйскаму'], ['Пограбування заправки', 'Рабаванне запраўкі'], ['Пограбування магазину', 'Рабаванне крамы'], ['ювелірного магазину', 'ювелірнай крамы'], ['розсуд судді', 'меркаванне суддзі'], ['торгового автомата', 'гандлёвага аўтамата'], ['контейнера', 'кантэйнера'], ['Реалістичне затримання та застосування сили', 'Рэалістычнае затрыманне і прымяненне сілы'], ['без дозволу гравця', 'без дазволу гульца'], ['наявність розшуку', 'наяўнасць вышуку'], ['заради помсти', 'дзеля помсты'], ['тролінгу', 'тролінгу'], ['тазера', 'тэйзера'], ['на розсуд адміністрації', 'на меркаванне адміністрацыі'], ['далі ніж на 5 метрів', 'далей за 5 метраў'], ['Булінг родичів', 'Булінг сваякоў'], ['Поважайте людей', 'Паважайце людзей'], ['судді', 'суддзі'], ['адвоката', 'адваката'], ['прокурора', 'пракурора'], ['Ігнорування рішення суду', 'Ігнараванне рашэння суда'], ['Приховування друзів або знайомих', 'Утойванне сяброў або знаёмых'], ['Неповага до судді', 'Непавага да суддзі'], ['провокування', 'правакаванне'], ['використання багів', 'выкарыстанне багаў'], ['Повторний випадок', 'Паўторны выпадак'], ['Документування порушень і затримань', 'Дакументаванне парушэнняў і затрыманняў'], ['Непредставлення', 'Непрадстаўленне'], ['звання, ім’я, посада', 'званне, імя, пасада'], ['прав Міранди', 'правоў Міранды'], ['штрафу, бану', 'штрафу, бану'], ['твінки тощо', 'твінкі і гэтак далей'], ['швидку допомогу', 'хуткую дапамогу'], ['яка їде на виклик', 'якая едзе на выклік'], ['Зламав автомобіль', 'Зламаў аўтамабіль'], ['Заборонені бійки', 'Забароненыя бойкі'], ['зелених зонах', 'зялёных зонах'], ['стрілянина', 'стральба']]
+    }; */
+
+    function initGrid() {
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('rulesSearch').addEventListener('input', renderFilteredRules);
+        document.querySelectorAll('.rules-tab').forEach(tab => tab.addEventListener('click', () => {
+            document.querySelectorAll('.rules-tab').forEach(item => item.classList.remove('active'));
+            tab.classList.add('active');
+            renderFilteredRules();
+        }));
+        renderFilteredRules();
+    }
+
+    function getRuleType(rule) {
+        const punishment = rule.punish.toLowerCase();
+        const text = `${rule.title} ${punishment}`;
+        return {
+            isBan: /бан|перманент/.test(punishment),
+            isFine: /штраф|€/.test(punishment),
+            isSerious: /бан|перманент|кпз|конфіскац|убив|збро|граб|напад/.test(text)
+        };
+    }
+
+    function renderFilteredRules() {
+        const query = document.getElementById('rulesSearch').value.trim().toLowerCase();
+        const filter = document.querySelector('.rules-tab.active').dataset.filter;
+        const grid = document.getElementById('btnGrid');
+        const matchingCategories = categories.filter(cat => getVisibleRules(cat, filter, query).length > 0);
+        grid.innerHTML = '';
+
+        matchingCategories.forEach(cat => {
+            const idx = categories.indexOf(cat);
+            const btn = document.createElement('div');
+            btn.className = 'btn-rule show';
+            btn.innerHTML = `<i class="${cat.icon}"></i><span>${cat.name}</span>`;
+            btn.onclick = () => openModal(idx);
+            grid.appendChild(btn);
+        });
+
+        const section = document.getElementById('filteredRules');
+        const list = document.getElementById('filteredRulesList');
+        const hasNoResults = query.length > 0 && matchingCategories.length === 0;
+        section.classList.toggle('active', hasNoResults);
+        if (hasNoResults) {
+            document.getElementById('filteredRulesTitle').textContent = 'Результат пошуку';
+            list.innerHTML = '<div class="no-results">Нічого не знайдено. Перевірте написання правила.</div>';
+        } else {
+            list.innerHTML = '';
+        }
+    }
+
+    function getVisibleRules(cat, filter, query) {
+        return cat.rules.filter(rule => {
+            const text = `${cat.name} ${rule.title} ${rule.desc} ${rule.punish}`.toLowerCase();
+            const type = getRuleType(rule);
+            const matchesFilter = filter === 'all' || (filter === 'ban' && type.isBan) || (filter === 'fine' && type.isFine) || (filter === 'serious' && type.isSerious);
+            return matchesFilter && (!query || text.includes(query));
+        });
+    }
+
+    function openModal(idx) {
+        const body = document.getElementById('modalBody');
+        const cat = categories[idx];
+        const filter = document.querySelector('.rules-tab.active').dataset.filter;
+        const query = document.getElementById('rulesSearch').value.trim().toLowerCase();
+        const visibleRules = getVisibleRules(cat, filter, query);
+        body.innerHTML = `<div class="cat-header"><i class="${cat.icon}"></i><span>${cat.name}</span><p style="color:var(--text-muted); font-size:14px; font-weight:600; text-transform:none;">${cat.subtitle}</p></div>`;
+
+        if (cat.name.includes('Зелені зони')) {
+            body.innerHTML += `<div class="zone-map-frame"><img src="image_247891.png" alt="Карта зелених зон"></div>`;
+        }
+
+        visibleRules.forEach(rule => {
+            const isRed = /депортац|бан|перманент|конфіскац/i.test(rule.punish);
+            body.innerHTML += `
+                <div class="rule-item">
+                    <div>
+                        <div class="rule-title">${rule.title}</div>
+                        ${rule.desc ? `<div class="rule-desc">${rule.desc}</div>` : ''}
+                    </div>
+                    ${rule.punish ? `<div class="punish-wrap"><span class="punish-label">Покарання</span><span class="punish-tag ${isRed ? 'punish-red' : 'punish-orange'}"><i class="fa-solid fa-circle-exclamation"></i>${rule.punish}</span></div>` : ''}
+                </div>
+            `;
+        });
+
+        const modal = document.getElementById('modal');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => modal.classList.add('open'), 10);
+    }
+
+    function handleIdeaButtonClick() {
+        if (!window.userLoggedIn) showNotification('УВАГА!', 'Спочатку увійдіть через Google.', 'var(--admin-color)'); 
+        else openIdeaModal();
+    }
+
+    function openIdeaModal() {
+        document.getElementById('modalBody').innerHTML = `<div class="cat-header"><i class="fa-solid fa-lightbulb"></i>ВАША ІДЕЯ</div><textarea id="ideaText" style="width: 100%; height: 150px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px; color: white; resize: none; font-size: 16px; outline:none;" placeholder="Опишіть ідею..."></textarea><div style="text-align:center; margin-top:20px;"><button id="submitIdeaBtn" style="background: var(--success); color: white; border: none; padding: 12px 40px; border-radius: 10px; font-weight: 700; cursor: pointer;" onclick="sendIdea()">НАДІСЛАТИ</button></div>`;
+        const modal = document.getElementById('modal'); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('open'), 10);
+    }
+
+    function sendIdea() {
+        const now = Date.now();
+        const lastSent = localStorage.getItem('last_idea_time') || 0;
+        const cooldown = 180000; 
+        const diff = now - lastSent;
+
+        if (diff < cooldown) {
+            const rem = cooldown - diff;
+            const m = Math.floor(rem / 60000);
+            const s = Math.ceil((rem % 60000) / 1000);
+            let timeText = m > 0 ? `${m} хв. та ${s} сек.` : `${s} сек.`;
+            return showNotification('УВАГА!', `Наступна спроба через ${timeText}`, 'var(--admin-color)');
+        }
+
+        const text = document.getElementById('ideaText').value; 
+        if(!text.trim()) return showNotification('УВАГА!', 'Поле не може бути порожнім.', 'var(--admin-color)');
+        
+        const btn = document.getElementById('submitIdeaBtn'); 
+        btn.innerHTML = '<i class="fa-solid fa-clock fa-spin"></i> НАДСИЛАННЯ...';
+
+        setTimeout(() => {
+            const ideas = JSON.parse(localStorage.getItem('server_ideas') || '[]');
+            ideas.push({ id: Date.now(), email: window.userEmail, text: text, date: new Date().toLocaleString(), status: 'pending', notified: false });
+            localStorage.setItem('server_ideas', JSON.stringify(ideas));
+            localStorage.setItem('last_idea_time', Date.now());
+
+            document.getElementById('modalBody').innerHTML = '<div style="text-align:center; padding:20px;"><i class="fa-solid fa-circle-check" style="font-size:60px; color:var(--success);"></i><h2 style="margin-top:15px;">НАДІСЛАНО!</h2><p style="color:var(--text-muted); margin:15px 0;">Адміністратор перевірить вашу ідею. Дякуємо!</p><button onclick="closeModal()" class="btn-nav btn-add-idea" style="margin:0 auto;">ЗАКРИТИ</button></div>';
+        }, 1200);
+    }
+
+    function showNotification(title, msg, color) {
+        const container = document.getElementById('notification-container');
+        const notif = document.createElement('div'); notif.className = 'notif';
+        notif.style.borderLeftColor = color;
+        notif.innerHTML = `<div class="notif-title" style="color:${color}">${title}</div><div class="notif-msg">${msg}</div>`;
+        container.appendChild(notif);
+        setTimeout(() => { notif.style.opacity = '0'; setTimeout(() => notif.remove(), 500); }, 5000);
+    }
+
+    function openAdminPanel() {
+        const body = document.getElementById('modalBody'); 
+        const ideas = JSON.parse(localStorage.getItem('server_ideas') || '[]');
+        body.innerHTML = '<div class="cat-header"><i class="fa-solid fa-user-shield"></i><span>ПАНЕЛЬ АДМІНІСТРАТОРА</span></div>';
+        if(!ideas.length) body.innerHTML += '<p style="text-align:center; color:var(--text-muted);">Ідей немає.</p>';
+        [...ideas].reverse().forEach(i => {
+            let st = i.status === 'approved' ? 'st-approved' : (i.status === 'rejected' ? 'st-rejected' : '');
+            body.innerHTML += `<div class="admin-item ${st}"><small>${i.date} | ${i.email}</small><p style="margin:8px 0;">${i.text}</p><div class="adm-actions"><button class="btn-adm-act" style="background:var(--success)" onclick="updateIdea(${i.id}, 'approved')" ${i.status!=='pending'?'disabled':''}>ТАК</button><button class="btn-adm-act" style="background:var(--error)" onclick="updateIdea(${i.id}, 'rejected')" ${i.status!=='pending'?'disabled':''}>НІ</button><button class="btn-adm-act" style="background:#444" onclick="deleteIdea(${i.id})">🗑️</button></div></div>`;
+        });
+        const modal = document.getElementById('modal'); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('open'), 10);
+    }
+
+    window.updateIdea = (id, status) => {
+        let ideas = JSON.parse(localStorage.getItem('server_ideas') || '[]');
+        const idx = ideas.findIndex(i => i.id === id);
+        if(idx !== -1) { 
+            ideas[idx].status = status; ideas[idx].notified = false; 
+            localStorage.setItem('server_ideas', JSON.stringify(ideas)); 
+            openAdminPanel();
+        }
+    }
+
+    window.deleteIdea = (id) => {
+        let ideas = JSON.parse(localStorage.getItem('server_ideas') || '[]');
+        localStorage.setItem('server_ideas', JSON.stringify(ideas.filter(i => i.id !== id))); 
+        openAdminPanel();
+    }
+
+    window.closeModal = () => {
+        document.getElementById('modal').classList.remove('open');
+        document.body.style.overflow = '';
+        setTimeout(() => document.getElementById('modal').style.display = 'none', 400);
+    }
+    window.closeAllMenus = (e) => { if (!e.target.closest('#authBtn')) document.getElementById('userMenu')?.classList.remove('active'); }
+
+    console.log('%cСторінка правил VolynRP', 'font-size:16px; font-weight:700; color:#60a5fa;');
+    console.log('%cАвторські права захищені законами всіх країн. Будь-яке копіювання, змінення та поширення без дозволу заборонено.', 'font-size:12px; color:#94a3b8;');
+    console.log('%cЯкщо ви бачите це повідомлення — ви перебуваєте в консолі розробника F12. Поважайте інтелектуальну власність.', 'font-size:12px; color:#a5b4fc;');
+
+    window.onload = initGrid;
+</script>
+</body>
+</html>
