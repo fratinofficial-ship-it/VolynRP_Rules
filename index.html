@@ -42,8 +42,11 @@
         .buttons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%; }
         
         .btn-rule { 
-            background: var(--card-bg); border: 1px solid var(--glass-border); padding: 35px 20px; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; opacity: 0; transform: translateY(20px); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative; overflow: hidden; isolation: isolate; background: var(--card-bg); border: 1px solid var(--glass-border); padding: 35px 20px; border-radius: 20px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; opacity: 0; transform: translateY(20px); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
+        .btn-rule::before { content: ''; position: absolute; z-index: -1; top: -45%; left: -75%; width: 42%; height: 190%; transform: rotate(20deg); background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent); opacity: 0; pointer-events: none; }
+        .btn-rule:hover::before { opacity: 1; animation: categoryLightSweep 0.75s ease-out; }
+        @keyframes categoryLightSweep { from { left: -75%; } to { left: 140%; } }
         .btn-rule.show { opacity: 1; transform: translateY(0); }
         .btn-rule:hover { transform: translateY(-10px) !important; border-color: var(--neon-blue); box-shadow: 0 15px 35px rgba(0, 212, 255, 0.25); background: rgba(255, 255, 255, 0.06); }
         
@@ -104,6 +107,15 @@
         @media (max-width: 620px) { .rule-item { flex-direction: column; } .punish-wrap { align-items: flex-start; min-width: 0; } }
         .zone-map-frame { width: 100%; margin-bottom: 20px; padding: 8px; border: 1px solid rgba(0, 212, 255, 0.45); border-radius: 20px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.12), rgba(255, 255, 255, 0.03)); box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.08), 0 12px 30px rgba(0, 0, 0, 0.3), 0 0 28px rgba(0, 212, 255, 0.12); }
         .zone-map-frame img { width: 100%; max-height: 320px; display: block; object-fit: contain; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(2, 6, 23, 0.55); }
+        .mayor-rules { width: 100%; margin-top: 42px; padding: 0; }
+        .mayor-rules-header { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 28px; }
+        .mayor-rules-header h2 { font-size: clamp(28px, 5vw, 54px); font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 1px; color: #ffffff; }
+        .mayor-rules-header::after { content: ''; width: min(82%, 620px); height: 14px; border-radius: 999px; background: var(--neon-blue); box-shadow: 0 0 18px rgba(0, 212, 255, 0.35); }
+        .mayor-rules-list { display: flex; flex-direction: column; gap: 12px; }
+        .mayor-rule { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 17px 18px; border: 1px solid rgba(96, 165, 250, 0.16); border-left: 4px solid var(--neon-blue); border-radius: 14px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)); transition: 0.25s ease; }
+        .mayor-rule:hover { border-color: rgba(0, 212, 255, 0.5); background: rgba(0, 212, 255, 0.07); transform: translateX(4px); }
+        .mayor-rule-title { font-size: 14px; line-height: 1.55; font-weight: 800; }
+        @media (max-width: 620px) { .mayor-rule { flex-direction: column; } }
         .footer-copyright { padding: 25px; text-align: center; font-size: 13px; color: var(--text-muted); border-top: 1px solid var(--glass-border); }
         #userPic { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
     </style>
@@ -141,6 +153,18 @@
         <div id="filteredRulesList"></div>
     </section>
     <div class="buttons-grid" id="btnGrid"></div>
+    <section class="mayor-rules" aria-labelledby="mayorRulesTitle">
+        <div class="mayor-rules-header">
+            <h2 id="mayorRulesTitle">Правила для мерів</h2>
+        </div>
+        <div class="mayor-rules-list">
+            <div class="mayor-rule"><div class="mayor-rule-title">1. Мінімальний вік кандидата — 14 років.</div></div>
+            <div class="mayor-rule"><div class="mayor-rule-title">2. Бути опозицією попередніх мерів.</div></div>
+            <div class="mayor-rule"><div class="mayor-rule-title">3. Перебувати на сервері більше одного місяця та хоча б в одній фракції.</div></div>
+            <div class="mayor-rule"><div class="mayor-rule-title">4. Бути адекватним і відповідально ставитися до посади.</div></div>
+            <div class="mayor-rule"><div class="mayor-rule-title">5. Знати щонайменше 50% правил сервера.</div></div>
+        </div>
+    </section>
 </div>
 
 <footer class="footer-copyright">&copy; <span id="year"></span> VolynRP. <span id="copyrightText">Усі права захищено.</span></footer>
